@@ -117,8 +117,16 @@ public class Config : MonoBehaviour {
     void Awake () {
         LoadConfig();		
 	}
-	
-	void OnApplicationQuit () {
+
+    void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            SaveConfig();
+        }
+    }
+
+    void OnApplicationQuit () {
         SaveConfig();
     }
 
@@ -134,7 +142,7 @@ public class Config : MonoBehaviour {
         UpdateUI();
     }
 
-    void SaveConfig()
+    public void SaveConfig()
     {
         Debug.Log("SaveConfig()");
         PlayerPrefs.SetString("host", Host);

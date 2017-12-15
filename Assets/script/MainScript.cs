@@ -33,6 +33,8 @@ public class MainScript : MonoBehaviour {
 
     public void Connect()
     {
+        config.SaveConfig();
+
         if (mqtt.Connect() == true)
         {
             config.Intaractable = false;
