@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
@@ -9,6 +7,9 @@ using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Exceptions;
 using uPLibrary.Networking.M2Mqtt.Messages;
 
+public delegate void OnCloseHandler();
+public delegate void OnReceiveHandler(string topic, string message);
+
 public class Mqtt : MonoBehaviour {
 
     [SerializeField]
@@ -16,13 +17,26 @@ public class Mqtt : MonoBehaviour {
 
     MqttClient client = null;
 
+    public event OnCloseHandler OnClose;
+    public event OnReceiveHandler OnReceive;
+
+    bool request_onclose = false;
+
     void Start () {
 		
 	}
-	
-	void Update () {
-		
-	}
+
+    private void Update()
+    {
+        if (request_onclose)
+        {
+            if (OnClose != null)
+            {
+                OnClose();
+            }
+            request_onclose = false;
+        }
+    }
 
     public bool Connect()
     {
@@ -40,6 +54,12 @@ public class Mqtt : MonoBehaviour {
             else
             {
                 client.Connect(client_id);
+            }
+
+            if (client.IsConnected == false)
+            {
+                client = null;
+                return false;
             }
 
             client.MqttMsgPublishReceived += OnMqttMsgPublishReceived;
@@ -68,12 +88,16 @@ public class Mqtt : MonoBehaviour {
     {
         string topic = e.Topic;
         string msg = Encoding.UTF8.GetString(e.Message);
-        Debug.Log(string.Format("{0}:{1}", topic, msg));
-    }
 
+        if (OnReceive != null)
+        {
+            OnReceive(topic, msg);
+        }
+    }
 
     void OnConnectionClosed(object sender, EventArgs e)
     {
         Debug.Log("OnConnectionClosed()");
+        request_onclose = true;
     }
 }

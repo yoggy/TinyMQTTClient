@@ -16,6 +16,8 @@ public class MainScript : MonoBehaviour {
 
     void Start()
     {
+        mqtt.OnClose += OnClose;
+        mqtt.OnReceive += OnReceive;
     }
 
     void OnApplicationPause(bool pauseStatus)
@@ -33,6 +35,7 @@ public class MainScript : MonoBehaviour {
 
     public void Connect()
     {
+        Debug.Log("Connect()");
         config.SaveConfig();
 
         if (mqtt.Connect() == true)
@@ -48,8 +51,19 @@ public class MainScript : MonoBehaviour {
 
     public void Disconnect()
     {
+        Debug.Log("Disconnect()");
         mqtt.Disconnect();
         config.Intaractable = true;
         transition.Visible = false;
+    }
+
+    public void OnClose()
+    {
+        Disconnect();
+    }
+
+    public void OnReceive(string topic, string message)
+    {
+        Debug.Log(string.Format("{0}:{1}", topic, message));
     }
 }
