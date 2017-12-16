@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
@@ -10,6 +12,12 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 public delegate void OnCloseHandler();
 public delegate void OnReceiveHandler(string topic, string message);
 
+class Message
+{
+    public string topic;
+    public string message;
+}
+
 public class Mqtt : MonoBehaviour {
 
     [SerializeField]
@@ -20,14 +28,27 @@ public class Mqtt : MonoBehaviour {
     public event OnCloseHandler OnClose;
     public event OnReceiveHandler OnReceive;
 
+    Queue message_queue;
     bool request_onclose = false;
 
-    void Start () {
-		
-	}
+    void Awake () {
+        message_queue = Queue.Synchronized(new Queue());
+    }
 
     private void Update()
     {
+        while (true)
+        {
+            object obj = message_queue.Dequeue();
+            if (obj == null) break;
+
+            Message msg = (Message)obj;
+            if (OnReceive != null)
+            {
+                OnReceive(msg.topic, msg.message);
+            }
+        }
+
         if (request_onclose)
         {
             if (OnClose != null)
