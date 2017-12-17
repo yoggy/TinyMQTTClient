@@ -14,6 +14,12 @@ public class MainScript : MonoBehaviour {
     [SerializeField]
     Mqtt mqtt;
 
+    [SerializeField]
+    Toast toast;
+
+    [SerializeField]
+    MessageList message_list;
+
     void Start()
     {
         mqtt.OnClose += OnClose;
@@ -37,6 +43,7 @@ public class MainScript : MonoBehaviour {
     {
         Debug.Log("Connect()");
         config.SaveConfig();
+        message_list.Clear();
 
         if (mqtt.Connect() == true)
         {
@@ -45,6 +52,7 @@ public class MainScript : MonoBehaviour {
         }
         else
         {
+            toast.Show("mqtt.Connect() failed...");
             Disconnect();
         }
     }
@@ -65,5 +73,6 @@ public class MainScript : MonoBehaviour {
     public void OnReceive(string topic, string message)
     {
         Debug.Log(string.Format("{0}:{1}", topic, message));
+        message_list.Upsert(topic, message);
     }
 }

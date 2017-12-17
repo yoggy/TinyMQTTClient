@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Runtime.CompilerServices;
 
 // https://github.com/eclipse/paho.mqtt.m2mqtt
 using uPLibrary.Networking.M2Mqtt;
@@ -12,14 +14,65 @@ using uPLibrary.Networking.M2Mqtt.Messages;
 public delegate void OnCloseHandler();
 public delegate void OnReceiveHandler(string topic, string message);
 
-class Message
+public class MqttEvent
 {
+    public enum EventType {ON_CLOSE, ON_RECEIVE };
+    public EventType event_type;
+
+    // for ON_RECEIVE
     public string topic;
     public string message;
+
+    public MqttEvent(EventType type)
+    {
+        this.event_type = type;        
+    }
+
+    public MqttEvent(EventType type, string topic, string message)
+    {
+        this.event_type = type;
+        this.topic = topic;
+        this.message = message;
+    }
 }
 
-public class Mqtt : MonoBehaviour {
+public class MqttEventQueue
+{
+    Queue<MqttEvent> queue = new Queue<MqttEvent>();
 
+    public void EnqueOnClose()
+    {
+        Enqueue(new MqttEvent(MqttEvent.EventType.ON_CLOSE));
+    }
+
+    public void EnqueOnRecieve(string topic, string message)
+    {
+        Enqueue(new MqttEvent(MqttEvent.EventType.ON_RECEIVE, topic, message));
+    }
+
+    [MethodImpl(MethodImplOptions.Synchronized)]
+    public void Enqueue(MqttEvent evt)
+    {
+        queue.Enqueue(evt);
+    }
+
+    [MethodImpl(MethodImplOptions.Synchronized)]
+    public MqttEvent Dequeue()
+    {
+        try
+        {
+            MqttEvent evt = queue.Dequeue();
+            return evt;
+        }
+        catch (Exception e)
+        {    
+        }
+        return null;
+    }
+}
+
+public class Mqtt : MonoBehaviour
+{
     [SerializeField]
     Config config;
 
@@ -28,34 +81,30 @@ public class Mqtt : MonoBehaviour {
     public event OnCloseHandler OnClose;
     public event OnReceiveHandler OnReceive;
 
-    Queue message_queue;
-    bool request_onclose = false;
+    MqttEventQueue queue = new MqttEventQueue();
 
-    void Awake () {
-        message_queue = Queue.Synchronized(new Queue());
+    void Awake ()
+    {
     }
 
     private void Update()
     {
+        // message pump
         while (true)
         {
-            object obj = message_queue.Dequeue();
-            if (obj == null) break;
+            MqttEvent evt = queue.Dequeue();
+            if (evt == null) break;
 
-            Message msg = (Message)obj;
-            if (OnReceive != null)
-            {
-                OnReceive(msg.topic, msg.message);
+            switch (evt.event_type) {
+                case MqttEvent.EventType.ON_CLOSE:
+                    OnMainThreadClose();
+                    break;
+                case MqttEvent.EventType.ON_RECEIVE:
+                    OnMainThreadReceive(evt.topic, evt.message);
+                    break;
+                default:
+                    break;
             }
-        }
-
-        if (request_onclose)
-        {
-            if (OnClose != null)
-            {
-                OnClose();
-            }
-            request_onclose = false;
         }
     }
 
@@ -108,17 +157,25 @@ public class Mqtt : MonoBehaviour {
     void OnMqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
     {
         string topic = e.Topic;
-        string msg = Encoding.UTF8.GetString(e.Message);
+        string message = Encoding.UTF8.GetString(e.Message);
 
-        if (OnReceive != null)
-        {
-            OnReceive(topic, msg);
-        }
+        queue.EnqueOnRecieve(topic, message);
+    }
+
+    public void OnMainThreadReceive(string topic, string message)
+    {
+        OnReceive?.Invoke(topic, message);
     }
 
     void OnConnectionClosed(object sender, EventArgs e)
     {
         Debug.Log("OnConnectionClosed()");
-        request_onclose = true;
+
+        queue.EnqueOnClose();
+    }
+
+    public void OnMainThreadClose()
+    {
+        OnClose?.Invoke();
     }
 }
