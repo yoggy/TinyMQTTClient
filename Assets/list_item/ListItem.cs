@@ -11,6 +11,9 @@ public class ListItem : MonoBehaviour {
     [SerializeField]
     Text text_value;
 
+    [SerializeField]
+    Animator animator;
+
     public string Key
     {
         get
@@ -34,6 +37,7 @@ public class ListItem : MonoBehaviour {
         set
         {
             text_value.text = value;
+            animator.SetTrigger("blink");
         }
     }
 }
