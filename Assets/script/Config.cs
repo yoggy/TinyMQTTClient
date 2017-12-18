@@ -132,12 +132,12 @@ public class Config : MonoBehaviour {
 
     void LoadConfig()
     {
-        Host = PlayerPrefs.GetString("host", "");
+        Host = PlayerPrefs.GetString("host", "iot.eclipse.org");
         Port = PlayerPrefs.GetInt("port", 1883);
         UseAuth = PlayerPrefs.GetInt("use_auth", 0) != 0 ? true : false;
         Username = PlayerPrefs.GetString("username", "");
         Password = PlayerPrefs.GetString("password", "");
-        SubscribeTopic = PlayerPrefs.GetString("subscribe_topic", "#");
+        SubscribeTopic = PlayerPrefs.GetString("subscribe_topic", "tiny_mqtt_client/test/#");
 
         UpdateUI();
     }

@@ -568,7 +568,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Connection Settings
+  m_Text: MQTT Connection Settings
 --- !u!222 &145969218
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2331,7 +2331,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 938186267}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
@@ -2442,7 +2442,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 961620643}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.395153, z: 0}
+  m_LocalPosition: {x: 0, y: 0.07873154, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1562408942}
@@ -2451,7 +2451,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 1.3951532}
+  m_AnchoredPosition: {x: 0, y: 0.07873041}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &961620645
@@ -2785,7 +2785,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: '#'
+  m_Text: 
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -2931,7 +2931,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 5, y: -10}
-  m_SizeDelta: {x: 340, y: 31}
+  m_SizeDelta: {x: 340, y: 32.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1010557345
 MonoBehaviour:
@@ -3324,7 +3324,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1069614707}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -19.190277, z: 0}
+  m_LocalPosition: {x: 0, y: -0.09420776, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 557558435}
@@ -3687,7 +3687,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1069614708}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9293176
+  m_Size: 0.999653
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -5510,7 +5510,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: '#'
+  m_Text: 
 --- !u!222 &1766876301
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5898,7 +5898,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6278e4bdbc378941a97d263871ea6f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  config: {fileID: 1828234988}
 --- !u!1 &2135245134
 GameObject:
   m_ObjectHideFlags: 0
