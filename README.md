@@ -1,7 +1,7 @@
 TinyMQTTClient
 ====
 
-![img01.gif](img01.gif)
+![img02.gif](img02.gif)
 
 Libraries
 ----
