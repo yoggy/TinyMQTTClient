@@ -32,8 +32,11 @@ public class MessageList : MonoBehaviour {
         }
         else
         {
+            // RectTransformを持つPrefabをinstantiateする場合は、SetParent(～,false)で追加すること。
+            // 何も指定しないと、RectTransformのlocalScaleが画面比率に応じて変化してしまうので注意。
+            // https://answers.unity.com/questions/868484/why-is-instantiated-objects-scale-changing.html
             obj = GameObject.Instantiate(list_item_prefab);
-            obj.transform.SetParent(gameObject.transform);
+            obj.transform.SetParent(gameObject.transform, false);
             map[topic] = obj;
         }
 
