@@ -45,8 +45,20 @@ public class MainScript : MonoBehaviour {
         config.SaveConfig();
         message_list.Clear();
 
-        if (mqtt.Connect() == true)
+        bool rv;
+        if (config.UseAuth)
         {
+            rv = mqtt.Connect(config.Host, config.Port, config.Username, config.Password);
+        }
+        else
+        {
+            rv = mqtt.Connect(config.Host, config.Port);
+        }
+
+        if (rv == true)
+        {
+            mqtt.Subscribe(config.SubscribeTopic);
+
             config.Intaractable = false;
             transition.Visible = true;
         }

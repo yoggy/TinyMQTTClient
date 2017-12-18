@@ -73,9 +73,6 @@ public class MqttEventQueue
 
 public class Mqtt : MonoBehaviour
 {
-    [SerializeField]
-    Config config;
-
     MqttClient client = null;
 
     public event OnCloseHandler OnClose;
@@ -108,23 +105,16 @@ public class Mqtt : MonoBehaviour
         }
     }
 
-    public bool Connect()
+    public bool Connect(string host, int port)
     {
         if (client != null) return true;
 
-        client = new MqttClient(config.Host, config.Port, false, null, null, MqttSslProtocols.None);
+        client = new MqttClient(host, port, false, null, null, MqttSslProtocols.None);
         string client_id = "TinyMQTTClient-" + Guid.NewGuid().ToString();
 
         try
         {
-            if (config.UseAuth)
-            {
-                client.Connect(client_id, config.Username, config.Password);
-            }
-            else
-            {
-                client.Connect(client_id);
-            }
+            client.Connect(client_id);
 
             if (client.IsConnected == false)
             {
@@ -134,8 +124,6 @@ public class Mqtt : MonoBehaviour
 
             client.MqttMsgPublishReceived += OnMqttMsgPublishReceived;
             client.ConnectionClosed += OnConnectionClosed;
-
-            client.Subscribe(new string[] { config.SubscribeTopic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE }); // QoS0
         }
         catch (MqttConnectionException e) {
             client = null;
@@ -143,6 +131,40 @@ public class Mqtt : MonoBehaviour
         }
 
         return true;
+    }
+
+    public bool Connect(string host, int port, string username, string password)
+    {
+        if (client != null) return true;
+
+        client = new MqttClient(host, port, false, null, null, MqttSslProtocols.None);
+        string client_id = "TinyMQTTClient-" + Guid.NewGuid().ToString();
+
+        try
+        {
+            client.Connect(client_id, username, password);
+
+            if (client.IsConnected == false)
+            {
+                client = null;
+                return false;
+            }
+
+            client.MqttMsgPublishReceived += OnMqttMsgPublishReceived;
+            client.ConnectionClosed += OnConnectionClosed;
+        }
+        catch (MqttConnectionException e)
+        {
+            client = null;
+            return false;
+        }
+
+        return true;
+    }
+
+    public void Subscribe(string topic)
+    {
+        client.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE }); // QoS0
     }
 
     public void Disconnect()
