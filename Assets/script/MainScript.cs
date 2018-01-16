@@ -12,7 +12,7 @@ public class MainScript : MonoBehaviour {
     Config config;
 
     [SerializeField]
-    Mqtt mqtt;
+    MQTTClient mqtt;
 
     [SerializeField]
     Toast toast;
