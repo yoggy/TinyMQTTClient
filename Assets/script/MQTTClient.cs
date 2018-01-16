@@ -7,6 +7,9 @@
 //    Released under the MIT license
 //    http://opensource.org/licenses/mit-license.php;
 //
+
+#pragma warning disable 168
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
