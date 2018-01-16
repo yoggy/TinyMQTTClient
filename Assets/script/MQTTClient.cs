@@ -87,7 +87,7 @@ namespace MQTT {
 
         Queue queue = new Queue();
 
-        public bool IsConnect
+        public bool IsConnected
         {
             [MethodImpl(MethodImplOptions.Synchronized)]
             get
