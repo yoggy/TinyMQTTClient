@@ -78,6 +78,7 @@ namespace MQTT {
         }
     }
 
+    [DisallowMultipleComponent]
     public class MQTTClient : MonoBehaviour
     {
         MqttClient client = null;
