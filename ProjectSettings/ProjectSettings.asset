@@ -165,7 +165,7 @@ PlayerSettings:
     iOS: net.sabamiso.ios.tinymqttviewer
   buildNumber: {}
   AndroidBundleVersionCode: 1
-  AndroidMinSdkVersion: 23
+  AndroidMinSdkVersion: 25
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
   aotOptions: 

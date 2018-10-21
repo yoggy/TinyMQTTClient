@@ -19,23 +19,33 @@ using System.Runtime.CompilerServices;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Exceptions;
 using uPLibrary.Networking.M2Mqtt.Messages;
+using System.Threading.Tasks;
 
 namespace MQTT {
 
+    public delegate void OnConnectedHandler(bool result, string message);
     public delegate void OnCloseHandler();
     public delegate void OnReceiveHandler(string topic, string message);
 
     public class Event
     {
-        public enum Type { ON_CLOSE, ON_RECEIVE };
+        public enum Type { ON_CONNECTED, ON_CLOSE, ON_RECEIVE };
         public Type type;
 
+        public bool result;
         public string topic;
         public string message;
 
         public Event(Type type)
         {
             this.type = type;
+        }
+
+        public Event(Type type, bool result, string message)
+        {
+            this.type = type;
+            this.result = result;
+            this.message = message;
         }
 
         public Event(Type type, string topic, string message)
@@ -49,6 +59,11 @@ namespace MQTT {
     public class Queue
     {
         Queue<Event> queue = new Queue<Event>();
+
+        public void EnqueOnConnected(bool result, string message)
+        {
+            Enqueue(new Event(Event.Type.ON_CONNECTED, result, message));
+        }
 
         public void EnqueOnClose()
         {
@@ -86,6 +101,7 @@ namespace MQTT {
     {
         MqttClient client = null;
 
+        public event OnConnectedHandler OnConnected;
         public event OnCloseHandler OnClose;
         public event OnReceiveHandler OnReceive;
 
@@ -109,6 +125,9 @@ namespace MQTT {
 
                 switch (evt.type)
                 {
+                    case Event.Type.ON_CONNECTED:
+                        OnMainThreadConnected(evt.result, evt.message);
+                        break;
                     case Event.Type.ON_CLOSE:
                         OnMainThreadClose();
                         break;
@@ -122,69 +141,61 @@ namespace MQTT {
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public bool Connect(string host)
+        public void Connect(string host)
         {
-            return Connect(host, 1883);           
+            Connect(host, 1883);           
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public bool Connect(string host, int port)
+        public void Connect(string host, int port)
         {
-            if (client != null) return true;
-
-            client = new MqttClient(host, port, false, null, null, MqttSslProtocols.None);
-            string client_id = "MQTTClient-" + Guid.NewGuid().ToString();
-
-            try
-            {
-                client.Connect(client_id);
-
-                if (client.IsConnected == false)
-                {
-                    client = null;
-                    return false;
-                }
-
-                client.MqttMsgPublishReceived += OnMqttMsgPublishReceived;
-                client.ConnectionClosed += OnConnectionClosed;
-            }
-            catch (MqttConnectionException e)
-            {
-                client = null;
-                return false;
-            }
-
-            return true;
+            Connect(host, port, null, null);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public bool Connect(string host, int port, string username, string password)
+        public void Connect(string host, int port, string username, string password)
         {
-            if (client != null) return true;
+            if (client != null) return;
 
-            client = new MqttClient(host, port, false, null, null, MqttSslProtocols.None);
-            string client_id = "MQTTClient-" + Guid.NewGuid().ToString();
+            Task.Run(() => {
+                try
+                {
+                    client = new MqttClient(host, port, false, null, null, MqttSslProtocols.None); // raise SocketException...
+                    string client_id = "MQTTClient-" + Guid.NewGuid().ToString();
 
-            try
-            {
-                client.Connect(client_id, username, password);
+                    if (username != null)
+                    {
+                        client.Connect(client_id, username, password);
+                    }
+                    else
+                    {
+                        client.Connect(client_id);
+                    }
 
-                if (client.IsConnected == false)
+                    if (client.IsConnected == false)
+                    {
+                        client = null;
+                        OnConnectionConnected(false, "connection failed...");
+                    }
+
+                    client.MqttMsgPublishReceived += OnMqttMsgPublishReceived;
+                    client.ConnectionClosed += OnConnectionClosed;
+                    OnConnectionConnected(true, "");
+                }
+                catch (Exception e)
                 {
                     client = null;
-                    return false;
+                    string err_msg;
+                    Debug.LogError(e);
+                    if (username != null && e.GetType() == typeof(System.NullReferenceException)) {
+                        err_msg = "authentication failed..";
+                    }
+                    else {
+                        err_msg = e.Message;
+                    }
+                    OnConnectionConnected(false, err_msg);
                 }
-
-                client.MqttMsgPublishReceived += OnMqttMsgPublishReceived;
-                client.ConnectionClosed += OnConnectionClosed;
-            }
-            catch (MqttConnectionException e)
-            {
-                client = null;
-                return false;
-            }
-
-            return true;
+            });
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -210,6 +221,16 @@ namespace MQTT {
         {
             if (client == null) return;
             client.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE }); // QoS0
+        }
+
+        public void OnConnectionConnected(bool result, string message)
+        {
+            queue.EnqueOnConnected(result, message);
+        }
+
+        public void OnMainThreadConnected(bool result, string message)
+        {
+            OnConnected?.Invoke(result, message);
         }
 
         void OnMqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)

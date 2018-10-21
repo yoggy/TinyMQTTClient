@@ -20,8 +20,12 @@ public class MainScript : MonoBehaviour {
     [SerializeField]
     MessageList message_list;
 
+    [SerializeField]
+    Button connect_button;
+
     void Start()
     {
+        mqtt.OnConnected += OnConnected;
         mqtt.OnClose += OnClose;
         mqtt.OnReceive += OnReceive;
     }
@@ -45,28 +49,16 @@ public class MainScript : MonoBehaviour {
         config.SaveConfig();
         message_list.Clear();
 
-        bool rv;
         if (config.UseAuth)
         {
-            rv = mqtt.Connect(config.Host, config.Port, config.Username, config.Password);
+            mqtt.Connect(config.Host, config.Port, config.Username, config.Password);
         }
         else
         {
-            rv = mqtt.Connect(config.Host, config.Port);
+            mqtt.Connect(config.Host, config.Port);
         }
-
-        if (rv == true)
-        {
-            mqtt.Subscribe(config.SubscribeTopic);
-
-            config.Intaractable = false;
-            transition.Visible = true;
-        }
-        else
-        {
-            toast.Show("mqtt.Connect() failed...");
-            Disconnect();
-        }
+        config.Intaractable = false;
+        connect_button.interactable = false;
     }
 
     public void Disconnect()
@@ -74,7 +66,24 @@ public class MainScript : MonoBehaviour {
         Debug.Log("Disconnect()");
         mqtt.Disconnect();
         config.Intaractable = true;
+        connect_button.interactable = true;
         transition.Visible = false;
+    }
+
+    public void OnConnected(bool result, string message)
+    {
+        if (result == true)
+        {
+            mqtt.Subscribe(config.SubscribeTopic);
+            config.Intaractable = false;
+            connect_button.interactable = false;
+            transition.Visible = true;
+        }
+        else
+        {
+            toast.Show("mqtt.Connect() failed...e=" + message);
+            Disconnect();
+        }
     }
 
     public void OnClose()
