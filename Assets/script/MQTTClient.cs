@@ -163,7 +163,7 @@ namespace MQTT {
                     client = new MqttClient(host, port, false, null, null, MqttSslProtocols.None); // raise SocketException...
                     string client_id = "MQTTClient-" + Guid.NewGuid().ToString();
 
-                    if (username != null)
+                    if (username != null || username.Length == 0)
                     {
                         client.Connect(client_id, username, password);
                     }
