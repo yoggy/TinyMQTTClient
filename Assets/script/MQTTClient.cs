@@ -163,7 +163,7 @@ namespace MQTT {
                     client = new MqttClient(host, port, false, null, null, MqttSslProtocols.None); // raise SocketException...
                     string client_id = "MQTTClient-" + Guid.NewGuid().ToString();
 
-                    if (username != null || username.Length == 0)
+                    if (username != null && username.Length > 0)
                     {
                         client.Connect(client_id, username, password);
                     }
@@ -187,7 +187,7 @@ namespace MQTT {
                     client = null;
                     string err_msg;
                     Debug.LogError(e);
-                    if (username != null && e.GetType() == typeof(System.NullReferenceException)) {
+                    if (e.GetType() == typeof(System.NullReferenceException)) {
                         err_msg = "authentication failed..";
                     }
                     else {
@@ -203,7 +203,13 @@ namespace MQTT {
         {
             if (client != null)
             {
-                client.Disconnect();
+                try
+                {
+                    client.Disconnect();
+                }
+                catch (Exception e)
+                {
+                }
                 client = null;
             }
         }
