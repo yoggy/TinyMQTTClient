@@ -93,6 +93,11 @@ public class MainScript : MonoBehaviour {
 
     public void OnReceive(string topic, string message)
     {
+        if (message.Length > 256)
+        {
+            message = message.Substring(0, 256) + "...";
+        }
+
         Debug.Log(string.Format("{0}:{1}", topic, message));
         message_list.Upsert(topic, message);
     }
