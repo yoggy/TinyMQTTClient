@@ -235,10 +235,16 @@ namespace MQTT {
 
         void OnMqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
         {
-            string topic = e.Topic;
-            string message = System.Text.Encoding.UTF8.GetString(e.Message);
-
-            queue.EnqueOnRecieve(topic, message);
+            try
+            {
+                string topic = e.Topic;
+                string message = System.Text.Encoding.UTF8.GetString(e.Message);
+                queue.EnqueOnRecieve(topic, message);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(ex);
+            }
         }
 
         public void OnMainThreadReceive(string topic, string message)
